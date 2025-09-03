@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:ims_app/features/{{FEATURE_NAME}}/domain/entities/{{ENTITY_NAME}}.dart';
+import 'package:{{PACKAGE_NAME}}/features/{{FEATURE_NAME}}/domain/entities/{{ENTITY_NAME}}.dart';
 
 abstract class {{FEATURE_PASCAL}}State extends Equatable {
   const {{FEATURE_PASCAL}}State();

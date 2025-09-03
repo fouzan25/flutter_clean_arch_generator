@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
-import 'package:ims_app/core/error/failures.dart';
-import 'package:ims_app/features/{{FEATURE_NAME}}/domain/repositories/{{FEATURE_NAME}}_repository.dart';
+import 'package:{{PACKAGE_NAME}}/core/error/failures.dart';
+import 'package:{{PACKAGE_NAME}}/features/{{FEATURE_NAME}}/domain/repositories/{{FEATURE_NAME}}_repository.dart';
 
 class Delete{{ENTITY_PASCAL}}Usecase {
   final {{FEATURE_PASCAL}}Repository repository;

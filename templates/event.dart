@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:ims_app/features/{{FEATURE_NAME}}/domain/usecases/create_{{ENTITY_NAME}}_usecase.dart';
-import 'package:ims_app/features/{{FEATURE_NAME}}/domain/usecases/update_{{ENTITY_NAME}}_usecase.dart';
+import 'package:{{PACKAGE_NAME}}/features/{{FEATURE_NAME}}/domain/usecases/create_{{ENTITY_NAME}}_usecase.dart';
+import 'package:{{PACKAGE_NAME}}/features/{{FEATURE_NAME}}/domain/usecases/update_{{ENTITY_NAME}}_usecase.dart';
 
 abstract class {{FEATURE_PASCAL}}Event extends Equatable {
   const {{FEATURE_PASCAL}}Event();

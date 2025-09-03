@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:ims_app/features/{{FEATURE_NAME}}/domain/entities/{{ENTITY_NAME}}.dart';
+import 'package:{{PACKAGE_NAME}}/features/{{FEATURE_NAME}}/domain/entities/{{ENTITY_NAME}}.dart';
 
 part '{{ENTITY_NAME}}_model.g.dart';
 

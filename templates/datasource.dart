@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
-import 'package:ims_app/core/network/http_client.dart';
-import 'package:ims_app/features/{{FEATURE_NAME}}/data/models/{{ENTITY_NAME}}_model.dart';
+import 'package:{{PACKAGE_NAME}}/core/network/http_client.dart';
+import 'package:{{PACKAGE_NAME}}/features/{{FEATURE_NAME}}/data/models/{{ENTITY_NAME}}_model.dart';
 
 abstract class {{FEATURE_PASCAL}}RemoteDataSource {
   Future<List<{{ENTITY_PASCAL}}Model>> get{{ENTITY_PASCAL}}List();

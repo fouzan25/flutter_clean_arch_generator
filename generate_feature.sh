@@ -18,6 +18,25 @@ print_status() { echo -e "${BLUE}[INFO]${NC} $1"; }
 print_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 print_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
 
+# Function to extract package name from pubspec.yaml
+get_package_name() {
+    local project_path="$1"
+    local pubspec_file="$project_path/pubspec.yaml"
+    
+    if [ -f "$pubspec_file" ]; then
+        # Extract package name from pubspec.yaml
+        local package_name=$(grep "^name:" "$pubspec_file" | sed 's/name: *//g' | tr -d ' ')
+        if [ -n "$package_name" ]; then
+            echo "$package_name"
+            return 0
+        fi
+    fi
+    
+    # Fallback to default if pubspec.yaml not found or no name field
+    echo "app"
+    return 1
+}
+
 # Parse arguments
 if [ $# -eq 4 ]; then
     PROJECT_PATH=$1
@@ -25,20 +44,30 @@ if [ $# -eq 4 ]; then
     ENTITY_NAME=$3
     PACKAGE_NAME=$4
 elif [ $# -eq 3 ]; then
-    PROJECT_PATH="$PWD"
-    FEATURE_NAME=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-    ENTITY_NAME=$2
-    PACKAGE_NAME=$3
+    # Check if third argument is a path or package name
+    if [ -d "$1" ]; then
+        PROJECT_PATH=$1
+        FEATURE_NAME=$(echo "$2" | tr '[:upper:]' '[:lower:]')
+        ENTITY_NAME=$3
+        PACKAGE_NAME=$(get_package_name "$PROJECT_PATH")
+    else
+        PROJECT_PATH="$PWD"
+        FEATURE_NAME=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+        ENTITY_NAME=$2
+        PACKAGE_NAME=$3
+    fi
 elif [ $# -eq 2 ]; then
     PROJECT_PATH="$PWD"
     FEATURE_NAME=$(echo "$1" | tr '[:upper:]' '[:lower:]')
     ENTITY_NAME=$2
-    PACKAGE_NAME="ims_app"  # Default package name
+    PACKAGE_NAME=$(get_package_name "$PROJECT_PATH")
 else
     echo "Usage: $0 [project_path] <feature_name> <entity_name> [package_name]"
     echo "Examples:"
-    echo "  $0 /path/to/project account Account com.example.app"
-    echo "  $0 account Account   # uses current directory and default package"
+    echo "  $0 account Account                    # uses current directory and pubspec.yaml"
+    echo "  $0 /path/to/project account Account  # uses project path and pubspec.yaml"
+    echo "  $0 account Account com.example.app   # uses current directory with custom package"
+    echo "  $0 /path/to/project account Account com.example.app  # full custom"
     exit 1
 fi
 

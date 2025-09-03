@@ -1,11 +1,11 @@
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
-import 'package:ims_app/core/error/failures.dart';
-import 'package:ims_app/features/{{FEATURE_NAME}}/domain/entities/{{ENTITY_NAME}}.dart';
-import 'package:ims_app/features/{{FEATURE_NAME}}/domain/repositories/{{FEATURE_NAME}}_repository.dart';
-import 'package:ims_app/features/{{FEATURE_NAME}}/data/datasources/{{FEATURE_NAME}}_remote_datasource.dart';
-import 'package:ims_app/features/{{FEATURE_NAME}}/domain/usecases/create_{{ENTITY_NAME}}_usecase.dart';
-import 'package:ims_app/features/{{FEATURE_NAME}}/domain/usecases/update_{{ENTITY_NAME}}_usecase.dart';
+import 'package:{{PACKAGE_NAME}}/core/error/failures.dart';
+import 'package:{{PACKAGE_NAME}}/features/{{FEATURE_NAME}}/domain/entities/{{ENTITY_NAME}}.dart';
+import 'package:{{PACKAGE_NAME}}/features/{{FEATURE_NAME}}/domain/repositories/{{FEATURE_NAME}}_repository.dart';
+import 'package:{{PACKAGE_NAME}}/features/{{FEATURE_NAME}}/data/datasources/{{FEATURE_NAME}}_remote_datasource.dart';
+import 'package:{{PACKAGE_NAME}}/features/{{FEATURE_NAME}}/domain/usecases/create_{{ENTITY_NAME}}_usecase.dart';
+import 'package:{{PACKAGE_NAME}}/features/{{FEATURE_NAME}}/domain/usecases/update_{{ENTITY_NAME}}_usecase.dart';
 
 @LazySingleton(as: {{FEATURE_PASCAL}}Repository)
 class {{FEATURE_PASCAL}}RepositoryImpl implements {{FEATURE_PASCAL}}Repository {

@@ -75,23 +75,28 @@ cf [project_path] <feature_name> <entity_name> [package_name]
 # Navigate to your Flutter project root
 cd /path/to/your/flutter/project
 
-# Generate features
-cf user User                    # Uses default package name
-cf account Account com.myapp    # With custom package name
+# Generate features - automatically reads package name from pubspec.yaml
+cf user User                    # Uses package name from pubspec.yaml
+cf account Account              # Uses package name from pubspec.yaml
 cf product Product              # Simple entity
 cf dashboard Dashboard          # Dashboard feature
 cf settings Settings            # Settings feature
 ```
 
+#### With Custom Package Name (Override)
+```bash
+cf user User com.custom.package    # Override package name from pubspec.yaml
+```
+
 #### With Specific Project Path
 ```bash
-cf /path/to/flutter/project user User com.myapp
-cf ~/projects/my_app order Order com.company.app
+cf /path/to/flutter/project user User              # Uses pubspec.yaml from project path
+cf ~/projects/my_app order Order com.company.app   # Override with custom package
 ```
 
 ### Generated Structure
 
-For `cf user User com.myapp`:
+For `cf user User` (assuming package name "my_app" in pubspec.yaml):
 
 ```
 lib/

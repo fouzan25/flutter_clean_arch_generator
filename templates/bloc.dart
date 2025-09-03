@@ -1,11 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import 'package:ims_app/features/{{FEATURE_NAME}}/domain/usecases/get_{{ENTITY_NAME}}_usecase.dart';
-import 'package:ims_app/features/{{FEATURE_NAME}}/domain/usecases/create_{{ENTITY_NAME}}_usecase.dart';
-import 'package:ims_app/features/{{FEATURE_NAME}}/domain/usecases/update_{{ENTITY_NAME}}_usecase.dart';
-import 'package:ims_app/features/{{FEATURE_NAME}}/domain/usecases/delete_{{ENTITY_NAME}}_usecase.dart';
-import 'package:ims_app/features/{{FEATURE_NAME}}/presentation/bloc/{{FEATURE_NAME}}/{{FEATURE_NAME}}_event.dart';
-import 'package:ims_app/features/{{FEATURE_NAME}}/presentation/bloc/{{FEATURE_NAME}}/{{FEATURE_NAME}}_state.dart';
+import 'package:{{PACKAGE_NAME}}/features/{{FEATURE_NAME}}/domain/usecases/get_{{ENTITY_NAME}}_usecase.dart';
+import 'package:{{PACKAGE_NAME}}/features/{{FEATURE_NAME}}/domain/usecases/create_{{ENTITY_NAME}}_usecase.dart';
+import 'package:{{PACKAGE_NAME}}/features/{{FEATURE_NAME}}/domain/usecases/update_{{ENTITY_NAME}}_usecase.dart';
+import 'package:{{PACKAGE_NAME}}/features/{{FEATURE_NAME}}/domain/usecases/delete_{{ENTITY_NAME}}_usecase.dart';
+import 'package:{{PACKAGE_NAME}}/features/{{FEATURE_NAME}}/presentation/bloc/{{FEATURE_NAME}}/{{FEATURE_NAME}}_event.dart';
+import 'package:{{PACKAGE_NAME}}/features/{{FEATURE_NAME}}/presentation/bloc/{{FEATURE_NAME}}/{{FEATURE_NAME}}_state.dart';
 
 @lazySingleton
 class {{FEATURE_PASCAL}}Bloc extends Bloc<{{FEATURE_PASCAL}}Event, {{FEATURE_PASCAL}}State> {

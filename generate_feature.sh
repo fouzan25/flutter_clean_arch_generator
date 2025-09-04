@@ -199,34 +199,61 @@ $import_line\\
     return 2
 }
 
-add_to_location_list() {
+add_to_beamlocations_list() {
     local file="$1"
     local location_class="$2"
     
     if [ -f "$file" ]; then
         if ! grep -q "$location_class" "$file"; then
-            # Find beamLocations array and add before closing bracket
-            if grep -q "beamLocations:" "$file"; then
+            # Find beamLocations list and add before closing bracket
+            if grep -q "beamLocations =" "$file"; then
                 # Look for the closing bracket of beamLocations array more precisely
-                local closing_bracket_line=$(grep -n "^\s*],*$\|^\s*\],$" "$file" | head -1 | cut -d: -f1)
-                if [ -n "$closing_bracket_line" ]; then
-                    # Insert before the closing bracket with proper indentation
-                    sed -i "" "${closing_bracket_line}i\\
+                local start_line=$(grep -n "final List.*beamLocations =" "$file" | cut -d: -f1)
+                if [ -n "$start_line" ]; then
+                    # Find the closing bracket after the start line
+                    local closing_bracket_line=$(tail -n +$((start_line + 1)) "$file" | grep -n "^\s*];" | head -1 | cut -d: -f1)
+                    if [ -n "$closing_bracket_line" ]; then
+                        closing_bracket_line=$((start_line + closing_bracket_line))
+                        # Insert before the closing bracket with proper indentation
+                        sed -i "" "${closing_bracket_line}i\\
       $location_class," "$file"
-                    print_status "Added $location_class to router delegate"
-                    return 0
-                else
-                    # Enhanced fallback: look for any ], pattern
-                    if grep -q "],\s*$\|],$" "$file"; then
-                        sed -i "" "/],*$/i\\
-      $location_class," "$file"
-                        print_status "Added $location_class to router delegate"
+                        print_status "Added $location_class to beamLocations list"
                         return 0
                     fi
                 fi
             fi
         else
-            print_status "Location already exists in router delegate"
+            print_status "Location already exists in beamLocations list"
+            return 1
+        fi
+    fi
+    return 2
+}
+
+add_to_patterns_list() {
+    local file="$1"
+    local pattern_path="$2"
+    
+    if [ -f "$file" ]; then
+        if ! grep -q "$pattern_path" "$file"; then
+            # Find patterns list and add before closing bracket
+            if grep -q "final List.*patterns =" "$file"; then
+                local start_line=$(grep -n "final List.*patterns =" "$file" | cut -d: -f1)
+                if [ -n "$start_line" ]; then
+                    # Find the closing bracket after the start line
+                    local closing_bracket_line=$(tail -n +$((start_line + 1)) "$file" | grep -n "^\s*];" | head -1 | cut -d: -f1)
+                    if [ -n "$closing_bracket_line" ]; then
+                        closing_bracket_line=$((start_line + closing_bracket_line))
+                        # Insert before the closing bracket with proper indentation
+                        sed -i "" "${closing_bracket_line}i\\
+  $pattern_path," "$file"
+                        print_status "Added $pattern_path to patterns list"
+                        return 0
+                    fi
+                fi
+            fi
+        else
+            print_status "Pattern already exists in patterns list"
             return 1
         fi
     fi
@@ -300,22 +327,10 @@ add_error_location_to_router() {
     local file="$1"
     
     if [ -f "$file" ]; then
-        if ! grep -q "ErrorPageLocation()" "$file"; then
-            if grep -q "beamLocations:" "$file"; then
-                # Find the line with beamLocations: [ and add ErrorPageLocation as first item
-                local beam_locations_line=$(grep -n "beamLocations: \[" "$file" | cut -d: -f1)
-                if [ -n "$beam_locations_line" ]; then
-                    # Insert ErrorPageLocation() after the opening bracket
-                    sed -i "" "${beam_locations_line}a\\
-      ErrorPageLocation()," "$file"
-                    print_status "Added ErrorPageLocation to router delegate"
-                    return 0
-                fi
-            fi
-        else
-            print_status "ErrorPageLocation already exists in router delegate"
-            return 1
-        fi
+        # Router delegate now references beamLocations from location_provider.main.dart
+        # So we don't need to modify router_delegate.dart for locations
+        print_status "Router delegate uses beamLocations from location_provider.main.dart"
+        return 0
     fi
     return 2
 }
@@ -379,6 +394,18 @@ class ${FEATURE_PASCAL}Location extends BeamLocation<BeamState> {
   @override
   List<Pattern> get pathPatterns => [${FEATURE_PASCAL}Page.path];
 }
+
+final List<BeamLocation<RouteInformationSerializable<dynamic>>> beamLocations = [
+  ErrorPageLocation(),
+  ${FEATURE_PASCAL}Location(),
+];
+
+final List<Pattern> patterns = [
+  ErrorPage.path,
+  ${FEATURE_PASCAL}Page.path,
+];
+
+final String fallbackPath = ErrorPage.path;
 EOF
     print_success "Created location_provider.main.dart template"
 }
@@ -391,13 +418,18 @@ import 'package:$PACKAGE_NAME/core/services/location_provider.dart';
 import 'package:$PACKAGE_NAME/core/common/views/error_page.dart';
 
 final routerDelegate = BeamerDelegate(
-  locationBuilder: BeamerLocationBuilder(
-    beamLocations: [
-      ErrorPageLocation(),
-      ${FEATURE_PASCAL}Location(),
-    ],
-  ).call,
+  initialPath: '/',
+  locationBuilder: BeamerLocationBuilder(beamLocations: beamLocations).call,
   notFoundRedirectNamed: ErrorPage.path,
+  guards: [
+    BeamGuard(
+      pathPatterns: patterns,
+      check: (context, state) {
+        return true;
+      },
+      beamToNamed: (origin, target) => fallbackPath,
+    ),
+  ],
 );
 EOF
     print_success "Created router_delegate.dart template"
@@ -444,6 +476,10 @@ else
     # Add ErrorPageLocation if missing (but don't hang if it exists)
     add_error_location_to_main_file "$LOCATION_PROVIDER_MAIN_FILE" || true
     
+    # Add ErrorPageLocation to beamLocations and patterns lists if missing
+    add_to_beamlocations_list "$LOCATION_PROVIDER_MAIN_FILE" "ErrorPageLocation()" || true
+    add_to_patterns_list "$LOCATION_PROVIDER_MAIN_FILE" "ErrorPage.path" || true
+    
     # Always try to add the new feature location
     if [ -f "/tmp/location_content.tmp" ]; then
         print_status "Adding ${FEATURE_PASCAL}Location to existing file"
@@ -460,7 +496,8 @@ if [ ! -f "$ROUTER_DELEGATE_FILE" ]; then
     create_router_delegate_template "$ROUTER_DELEGATE_FILE"
 else
     print_status "Updating existing router_delegate.dart"
-    add_to_location_list "$ROUTER_DELEGATE_FILE" "$LOCATION_CLASS"
+    add_to_beamlocations_list "$LOCATION_PROVIDER_MAIN_FILE" "$LOCATION_CLASS"
+    add_to_patterns_list "$LOCATION_PROVIDER_MAIN_FILE" "${FEATURE_PASCAL}Page.path"
     update_router_error_redirect "$ROUTER_DELEGATE_FILE"
 fi
 

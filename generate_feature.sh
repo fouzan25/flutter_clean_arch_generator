@@ -266,12 +266,24 @@ add_location_to_main_file() {
     
     if [ -f "$file" ] && [ -f "$location_tmp_file" ]; then
         if ! grep -q "${FEATURE_PASCAL}Location" "$file"; then
-            # Add proper spacing and append the location class from temp file
-            echo "" >> "$file"
-            cat "$location_tmp_file" >> "$file"
-            echo "" >> "$file"
-            print_status "Added ${FEATURE_PASCAL}Location to location_provider.main.dart"
-            return 0
+            # Find the line where beamLocations starts and insert before it
+            local beam_locations_line=$(grep -n "final List.*beamLocations" "$file" | head -1 | cut -d: -f1)
+            if [ -n "$beam_locations_line" ]; then
+                # Insert the location class before beamLocations with proper spacing
+                sed -i "" "${beam_locations_line}i\\
+
+" "$file"
+                sed -i "" "${beam_locations_line}r $location_tmp_file" "$file"
+                print_status "Added ${FEATURE_PASCAL}Location to location_provider.main.dart"
+                return 0
+            else
+                # Fallback: append at end if no beamLocations found
+                echo "" >> "$file"
+                cat "$location_tmp_file" >> "$file"
+                echo "" >> "$file"
+                print_status "Added ${FEATURE_PASCAL}Location to location_provider.main.dart (fallback)"
+                return 0
+            fi
         else
             print_status "Location already exists in location_provider.main.dart"
             return 1
@@ -484,6 +496,10 @@ else
     if [ -f "/tmp/location_content.tmp" ]; then
         print_status "Adding ${FEATURE_PASCAL}Location to existing file"
         add_location_to_main_file "$LOCATION_PROVIDER_MAIN_FILE" "/tmp/location_content.tmp" || true
+        
+        # Add to beamLocations and patterns lists
+        add_to_beamlocations_list "$LOCATION_PROVIDER_MAIN_FILE" "${FEATURE_PASCAL}Location()" || true
+        add_to_patterns_list "$LOCATION_PROVIDER_MAIN_FILE" "${FEATURE_PASCAL}Page.path" || true
     else
         print_status "Warning: Location content template not found"
     fi
@@ -496,8 +512,6 @@ if [ ! -f "$ROUTER_DELEGATE_FILE" ]; then
     create_router_delegate_template "$ROUTER_DELEGATE_FILE"
 else
     print_status "Updating existing router_delegate.dart"
-    add_to_beamlocations_list "$LOCATION_PROVIDER_MAIN_FILE" "$LOCATION_CLASS"
-    add_to_patterns_list "$LOCATION_PROVIDER_MAIN_FILE" "${FEATURE_PASCAL}Page.path"
     update_router_error_redirect "$ROUTER_DELEGATE_FILE"
 fi
 
@@ -511,13 +525,17 @@ rm -f /tmp/location_content.tmp /tmp/error_location.tmp /tmp/new_main.tmp
 
 print_success "Feature '$FEATURE_PASCAL' generated with intelligent Beamer integration!"
 
-# Run build_runner to generate model code
-print_status "Running build_runner to generate model code..."
-cd "$PROJECT_PATH"
-if dart run build_runner build --delete-conflicting-outputs; then
-    print_success "Model code generated successfully!"
+# Run build_runner to generate model code (only if in proper Flutter project)
+if [ -f "$PROJECT_PATH/android/app/build.gradle" ] || [ -f "$PROJECT_PATH/ios/Runner.xcodeproj/project.pbxproj" ]; then
+    print_status "Running build_runner to generate model code..."
+    cd "$PROJECT_PATH"
+    if timeout 30 dart run build_runner build --delete-conflicting-outputs 2>/dev/null; then
+        print_success "Model code generated successfully!"
+    else
+        print_status "Note: build_runner skipped. Run 'dart run build_runner build' manually if needed."
+    fi
 else
-    echo "Warning: build_runner failed. You may need to run it manually."
+    print_status "Note: Not a complete Flutter project. Skipping build_runner."
 fi
 
 echo ""
